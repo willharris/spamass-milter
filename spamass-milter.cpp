@@ -179,13 +179,16 @@ bool ignore_authenticated_senders = false;
 bool warnedmacro = false;	/* have we logged that we couldn't fetch a macro? */
 bool auth = false;		/* don't scan authenticated users */
 
+// List of headers set based on spamc results
+list <string> spam_headers;
+
 // {{{ main()
 
 int
 main(int argc, char* argv[])
 {
    int c, err = 0;
-   const char *args = "afd:mMp:P:r:u:D:i:Ib:B:e:xS:R:C:";
+   const char *args = "afd:mMp:P:r:u:D:i:Ib:B:e:xS:R:C:h:";
    char *sock = NULL;
    bool dofork = false;
    char *pidfilename = NULL;
@@ -281,6 +284,9 @@ main(int argc, char* argv[])
             case 'x':
                 flag_expand = true;
                 break;
+            case 'h':
+                parse_headerlist(optarg);
+                break;
             case '?':
                 err = 1;
                 break;
@@ -301,7 +307,7 @@ main(int argc, char* argv[])
       cout << PACKAGE_NAME << " - Version " << PACKAGE_VERSION << endl;
       cout << "SpamAssassin Sendmail Milter Plugin" << endl;
       cout << "Usage: spamass-milter -p socket [-b|-B bucket] [-d xx[,yy...]] [-D host]" << endl;
-      cout << "                      [-e defaultdomain] [-f] [-i networks] [-I] [-m] [-M]" << endl;
+      cout << "                      [-e defaultdomain] [-f] [-h headerlist] [-i networks] [-I] [-m] [-M]" << endl;
       cout << "                      [-P pidfile] [-r nn] [-u defaultuser] [-x] [-a]" << endl;
       cout << "                      [-C rejectcode] [ -R rejectmsg ]" << endl;
       cout << "                      [-- spamc args ]" << endl;
@@ -315,6 +321,8 @@ main(int argc, char* argv[])
       cout << "   -e defaultdomain: pass full email address to spamc instead of just\n"
               "          username.  Uses 'defaultdomain' if there was none" << endl;
       cout << "   -f: fork into background" << endl;
+      cout << "   -h headerlist: include these headers from the spamc output" << endl;
+      cout << "         example: -h Relay-Countries,DCC" << endl;
       cout << "   -i: skip (ignore) checks from these IPs or netblocks" << endl;
       cout << "          example: -i 192.168.12.5,10.0.0.0/8,172.16.0.0/255.255.0.0" << endl;
       cout << "   -I: skip (ignore) checks if sender is authenticated" << endl;
@@ -2087,6 +2095,19 @@ void closeall(int fd)
 	int fdlimit = sysconf(_SC_OPEN_MAX); 
 	while (fd < fdlimit) 
 		close(fd++); 
+}
+
+void parse_headerlist(const char *headerlist)
+{
+	char* input = strdup(headerlist);
+	char* token;
+
+	while ((token = strsep(&input, ",")))
+	{
+		cout << token << endl;
+	}
+
+	free(input);
 }
 
 void parse_networklist(char *string, struct networklist *list)

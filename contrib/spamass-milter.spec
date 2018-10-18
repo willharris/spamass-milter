@@ -1,6 +1,6 @@
 Summary: Spamassassin Milter
 Name: spamass-milter
-Version: 0.4.0
+Version: 0.4.1
 Release:   3
 Source:    spamass-milter-%{version}.tar.gz
 Url: http://savannah.gnu.org/projects/spamass-milt/

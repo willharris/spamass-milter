@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 # $Id: configure.in,v 1.46 2014/09/11 00:43:25 kovert Exp $
-AC_INIT([spamass-milter],[0.4.0])
+AC_INIT([spamass-milter],[0.4.1])
 AC_PREREQ([2.71])
 AC_REVISION($Revision: 1.46 $)
 AC_CONFIG_SRCDIR([spamass-milter.cpp])
