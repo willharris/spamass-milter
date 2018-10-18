@@ -1,0 +1,181 @@
+#!/bin/sh
+#
+# $Id: spamass-milter.init 553 2011-06-14 00:30:42Z don $
+#
+# Sample init script for Debian GNU/Linux
+#
+#  Copyright (c) 2002 Georg C. F. Greve <greve@gnu.org>,
+#   all rights maintained by FSF Europe e.V., 
+#   Villa Vogelsang, Antonienallee 1, 45279 Essen, Germany
+#
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#  
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#  
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+#   Contact:
+#            Michael Brown <michaelb@opentext.com>
+
+# This init script was modified on Thu, 30 Jan 2003 02:06:04 -0500 by
+# Don Armstrong <don@donarmstrong.com> from contrib/spamass-milter to
+# allow force-reload and options specified in
+# /etc/default/spamass-milter necessary for inclusion in debian.
+
+# It has been modified additionally to support LSB Boot options and
+# status on Friday, July 6, 2007 14:02:44 PDT
+
+
+### BEGIN INIT INFO
+# Provides:          spamass-milter
+# Required-Start:    $syslog $local_fs $remote_fs
+# Required-Stop:     $syslog $local_fs $remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: milter for spamassassin
+# Description:       Calls spamassassin to allow filtering out
+#                    spam from ham in libmilter compatible MTAs.
+### END INIT INFO
+
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+NAME=spamass-milter
+DAEMON=/usr/sbin/spamass-milter
+SOCKET=/var/run/spamass/spamass.sock
+PIDFILE=/var/run/spamass/spamass.pid
+DESC="Sendmail milter plugin for SpamAssassin"
+
+DEFAULT=/etc/default/spamass-milter
+OPTIONS=""
+RUNAS="spamass-milter"
+CHUID=""
+SOCKETMODE="0600"
+SOCKETOWNER="root:root"
+
+test -x $DAEMON || exit 0
+
+if [ -e /etc/mail/sendmail.cf ] && egrep -q 'X.+S=local:/var/run/sendmail/spamass\.sock' /etc/mail/sendmail.cf; then
+    SOCKET=/var/run/sendmail/spamass.sock
+    SOCKETMODE=""
+    SOCKETOWNER=""
+    RUNAS=""
+    echo "WARNING: You are using the old location of spamass.sock. Change your input filter to use";
+    echo "/var/run/spamass/spamass.sock so spamass-milter can run as spamass-milter";
+fi;
+
+# If /usr/sbin/postfix exists, set up the defaults for a postfix install
+# These can be overridden in /etc/default/spamass-milter
+if [ -x /usr/sbin/postfix ]; then
+    SOCKET="/var/spool/postfix/spamass/spamass.sock"
+    SOCKETOWNER="postfix:postfix"
+    SOCKETMODE="0660"
+fi;
+
+if [ -r $DEFAULT ]; then
+    . $DEFAULT;
+fi;
+
+if [ -n "$RUNAS" ]; then
+    CHUID="--chuid $RUNAS";
+fi;
+
+set -e
+
+start() {
+    # Because the default socket is in the same location as the
+    # pidfile, we create them in this order.
+    for DIR in "$(dirname $PIDFILE)" "$(dirname $SOCKET)"; do 
+    # if the dirname is '.', then it's some kind of odd socket, like
+    # an inet socket. Don't create the directory in such a case
+	if [ "$DIR" != "." ] && [ ! -d "$DIR" ]; then
+	    mkdir -p "$DIR";
+	    if [ -x /sbin/restorecon ]; then 
+		/sbin/restorecon "$DIR";
+	    fi;
+	    if [ -n "$RUNAS" ]; then
+		chown "$RUNAS" "$DIR";
+	    fi;
+	fi;
+    done;
+    if [ -n "$RUNAS" ] && [ -d $(dirname $PIDFILE) ] &&
+	[ "$(stat -c '%U' $(dirname $PIDFILE))" != "$RUNAS" ]; then
+	echo "WARNING: $NAME will run as user $RUNAS but $(dirname $PIDFILE) is not owned by $RUNAS";
+	echo "Either delete this directory or chown it appropriately. Startup attempts may fail.";
+    fi;
+    if [ -n "$RUNAS" ] && [ $(dirname $SOCKET) != "." ] &&
+	[ -d $(dirname $SOCKET) ] &&
+	[ "$(stat -c '%U' $(dirname $SOCKET))" != "$RUNAS" ]; then
+	echo "WARNING: $NAME will run as user $RUNAS but $(dirname $SOCKET) is not owned by $RUNAS";
+	echo "Either delete this directory or chown it appropriately. Startup attempts may fail.";
+    fi;
+    if [ $(dirname $SOCKET) != "." ]; then 
+	/bin/rm -f $SOCKET
+    fi;
+    start-stop-daemon --start -p $PIDFILE $CHUID --exec $DAEMON -- -P $PIDFILE -f -p $SOCKET $OPTIONS
+    sleep 1s
+    if [ -n "$SOCKETMODE" ]; then
+	chmod $SOCKETMODE $SOCKET;
+    fi;
+    if [ -n "$SOCKETOWNER" ]; then
+	chown $SOCKETOWNER $SOCKET;
+    fi;
+}
+
+stop(){
+    start-stop-daemon --oknodo --stop -p $PIDFILE --signal 3 --exec $DAEMON
+    /bin/sleep 5s
+    /bin/rm -f $SOCKET
+    /bin/rm -f $PIDFILE
+}
+
+status(){
+    if [ -e $PIDFILE ]; then 
+	if kill -0 $(cat $PIDFILE); then
+	    echo "${NAME} running";
+	    exit 0;
+	else
+	    echo "${NAME} dead but $PIDFILE exists";
+	    exit 1;
+	fi;
+	echo "${NAME} not running";
+	exit 3;
+    fi;
+}
+
+case "$1" in
+  start)
+	echo -n "Starting $DESC: "
+	start
+	echo "${NAME}"
+	;;
+  stop)
+	echo -n "Stopping $DESC: "
+	stop
+	echo "${NAME}"
+	;;
+  force-reload | restart)
+	echo -n "Restarting $DESC: "
+
+	stop
+	start
+	echo "${NAME}"
+	;;
+  status)
+	status
+	;;
+  *)
+	N=$0
+	echo "Usage: $N {start|stop|restart|force-reload|status}" >&2
+	exit 1
+	;;
+esac
+
+exit 0

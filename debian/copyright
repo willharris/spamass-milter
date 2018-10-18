@@ -1,0 +1,12 @@
+Authors: Georg C. F. Greve <greve@gnu.org>
+         Michael Brown <michaelb@opentext.com>
+         Dan Nelson <dnelson@allantgroup.com>
+Webpage: http://savannah.nongnu.org/projects/spamass-milt/
+Download: http://savannah.nongnu.org/download/spamass-milt/
+Debianized: Don Armstrong <don@donarmstrong.com> Thu, 30 Jan 2003 01:26:45 -0500
+
+Copyright: Copyright (c) 2002 Georg C. F. Greve <greve@gnu.org>,
+            all rights maintained by FSF Europe e.V., 
+            Villa Vogelsang, Antonienallee 1, 45279 Essen, Germany
+
+License: GPL, available at /usr/share/common-licenses/GPL

@@ -1,0 +1,106 @@
+#!/usr/bin/make -f
+
+DH_VERBOSE = 1
+
+%: 
+	dh $@ --parallel --with autotools_dev
+
+override_dh_auto_configure:
+	 SPAMC="/usr/bin/spamc" SENDMAIL="/usr/sbin/sendmail" \
+		dh_auto_configure;
+
+override_dh_auto_clean:
+	dh_auto_clean;
+	rm -f config.log config.status config.h Makefile stamp-h1 spamass-milter.1
+
+# PREFIX=$(shell pwd)/debian/spamass-milter/usr
+# 
+# patch: patch-stamp
+# patch-stamp:
+# 	dh_testdir
+# 
+# 	if [ -e debian/patches ]; then \
+# 		for a in `ls debian/patches/*.diff`; do \
+# 			patch -f -p0 < $$a; \
+# 		done; \
+# 	fi;
+# 
+# 	rm -f unpatch-stamp;
+# 	touch $@
+# 
+# unpatch: unpatch-stamp
+# unpatch-stamp:
+# 	dh_testdir
+# 
+# 	if [ -e debian/patches ]; then \
+# 		for a in `ls debian/patches/*.diff`; do \
+# 			patch -f -p0 -R < $$a; \
+# 		done; \
+# 	fi;
+# 
+# 	rm -f patch-stamp
+# 	touch $@
+# 
+# 
+# configure: configure-stamp
+# configure-stamp:
+# 
+# # SPAMC and SENDMAIL are the location of the spamc and sendmail binary, respectively. PREFIX is the location to install to.
+# # We must specify --mandir because for some ungodly reason, it's being installed into /usr/man by default
+# 	LDFLAGS="-L/usr/lib/libmilter" SPAMC="/usr/bin/spamc" SENDMAIL="/usr/sbin/sendmail" \
+# 		./configure --prefix=$(PREFIX) --mandir=$(PREFIX)/share/man
+# 	touch $@
+# 
+# build: configure build-stamp
+# build-stamp:
+# 	dh_testdir
+# 
+# 	$(MAKE)
+# 
+# 	touch $@
+# 
+# clean:
+# 	dh_testdir
+# 	dh_testroot
+# 
+# 	rm -f build-stamp
+# 	rm -f patch-stamp
+# 	rm -f unpatch-stamp
+# 	rm -f configure-stamp
+# 
+# 	if [ -e Makefile -a -e config.status ]; then \
+# 		$(MAKE) clean; \
+# 	fi
+# # the clean target doesn't nuke these, so we kill them here.
+# 	rm -f config.log config.h config.status
+# 	dh_clean
+# 
+# install: build
+# 	dh_testdir
+# 	dh_testroot
+# 	dh_clean -k
+# 	dh_installdirs
+# 
+# 	$(MAKE) install
+# 
+# binary-indep:
+# 
+# binary-arch: build install
+# 	dh_testdir
+# 	dh_testroot
+# 	dh_installchangelogs ChangeLog
+# 	dh_installdocs NEWS README
+# 	dh_installman
+# 	dh_installinit
+# 	dh_link
+# 	dh_strip
+# 	dh_compress
+# 	dh_fixperms
+# 	dh_installdeb
+# 	dh_shlibdeps
+# 	dh_gencontrol
+# 	dh_md5sums
+# 	dh_builddeb
+# 
+# binary: binary-arch
+# .PHONY: build clean binary-arch binary-indep binary install

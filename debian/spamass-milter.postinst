@@ -1,0 +1,34 @@
+#!/bin/sh
+
+set -e
+
+case "$1" in
+    configure)
+        # Create the spamassmilter user
+	if [ -x /usr/sbin/adduser ]; then
+	    if ! id -u spamass-milter >/dev/null 2>&1; then
+		adduser --system --no-create-home --home /var/lib/spamass-milter spamass-milter;
+	    fi;
+	fi;
+	# Attempt to remove /var/run/spamass if it exists
+
+	# If we're upgrading from -4 or earlier, we want to remove the
+	# pidfile if spamass.milter isn't running, and then remove
+	# /var/run/spamass
+	if dpkg --compare-versions "$2" 'lt' '0.3.1-5'; then
+	    if [ -f /var/run/spamass/spamass.pid ] && ! kill -0 "$(cat  /var/run/spamass/spamass.pid)"; then
+		rm -f /var/run/spamass/spamass.pid;
+	    fi;
+	    if [ -d /var/run/spamass ]; then
+		rmdir --ignore-fail-on-non-empty /var/run/spamass ;
+	    fi;
+	fi;
+	;;
+    *)
+	# do nothing
+	;;
+esac
+    
+###DEBHELPER###
+
+exit 0;
