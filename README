@@ -1,0 +1,80 @@
+$Id: README,v 1.7 2006/04/19 15:40:36 dnelson Exp $
+
+Spamass-Milter, a small
+ - SpamAssassin Sendmail Mail Filter (Milter) Plugin 
+-----------------------------------------------------
+
+For information about Sendmail or SpamAssassin, please see 
+	http://www.sendmail.org
+	http://www.spamassassin.org
+
+
+Installation instructions:
+--------------------------
+
+You need to have sendmail + sendmail's libmilter (available since
+version 8.11, afaik, 8.12.+ recommended) installed. Depending on your
+distribution you may need to recompile sendmail for this. 
+
+Under Debian, "apt-get install libmilter-dev" should do the trick.
+
+For more information, please refer to http://www.sendmail.org.
+
+You will need to have SpamAssassin spamc & spamd installed &
+configured.
+
+BEFORE INSTALLING & TRYING TO USE THIS PROGRAM, PLEASE MAKE SURE THAT
+SPAMC/SPAMD DOES EXACTLY WHAT YOU WANT; OTHERWISE YOU MIGHT RISK
+LOSING MAIL.
+
+"./configure ; make ; make install" should do the trick.  If it
+doesn't, you may be missing something or the configuration may not be
+working for you.  If you are not using a release tarball, you will need
+to have automake and autoconf installed, and run "./autogen.sh" to
+generate the configure script first.
+
+Configuration:
+--------------
+
+In contrib, you'll find a startup-script that should work almost out
+of the box under Debian. Just modify the execution path to where you
+put the spamass-milter binary and set the path of the socket to what
+you want to use. YOU WILL MOST LIKELY HAVE TO EDIT THE VARIABLES ON
+TOP OF THIS FILE.
+
+Then start the daemon via /etc/init.d/spamass-milter start and make
+sure it didn't crash/terminate immediately. If it does, there should
+usually be syslog output. 
+
+If you want to make this happen automatically, you can use the
+update-rc.d command for this under Debian.
+
+
+Now you need to make sendmail use the plugin. I always recommend
+configuring sendmail through m4 & the sendmail.mc files. In this case
+adding the lines
+
+INPUT_MAIL_FILTER(`spamassassin', `S=local:/var/run/sendmail/spamass.sock, F=, T=C:15m;S:4m;R:4m;E:10m')dnl
+define(`confMILTER_MACROS_CONNECT',`t, b, j, _, {daemon_name}, {if_name}, {if_addr}')dnl
+define(`confMILTER_MACROS_HELO',`s, {tls_version}, {cipher}, {cipher_bits}, {cert_subject}, {cert_issuer}')dnl
+define(`confMILTER_MACROS_ENVRCPT',`r, v, Z')dnl
+
+should do the trick. Of course you need to modify the path of the
+socket if you put another one into the startup script. The timeouts
+have been increased somewhat because SpamAssassin may chew on it for a
+little while on a slow machine.
+
+Now recreate sendmail.cf, restart sendmail and experiment around a bit
+with the setup to make sure it is working.
+
+
+Q: Does this work for UUCP?
+
+Yes, it does. At least for me. :-)
+
+
+If you want, you might configure procmail to filter out the spam into
+a separate mailbox or do other fancy things. The SpamAssassin homepage
+will tell you more about it.
+
+That should be it. Have fun watching the spam drip off your box. :)

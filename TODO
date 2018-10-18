@@ -1,0 +1,38 @@
+$Id: TODO,v 1.13 2004/09/23 20:27:39 dnelson Exp $
+
+*DONE* Clean up the Reject/Copy to spambox/Deliver to recipient options:
+
+	         R  C  D
+	
+	-r       Y  -  -
+	-B addr  N  Y  Y
+	-b addr  N  Y  N
+	default  N  N  Y
+	-b null  N  N  N
+
+        "null" being a mail alias to /dev/null
+
+*DONE* Try and expand aliases before checking for -u usernames; sendmail -bv
+
+Add exclude lists to -i (tightest match wins)
+
+*DONE* Add flag to pass full username@domain to spamc
+
+*DONE* Add recipient debug flag to help diagnose -u/-b/-B problems
+
+Allow customized reject message with -r.  
+Option 1 - new flag.  -R "go away"
+Option 2 - overload -r.  -r "20,go away"
+
+Add a score range to -bBr:
+	-b ">5<20 bucket"
+	-r ">=20"
+
+Fix ipv6 crashes
+
+Add tcp_wrappers support to limit who can talk to our TCP socket
+
+Either keep the input body or a checksum of it, and only replace the
+body when SA changes it
+
+Collapse the variables running+connected+pid into one variable

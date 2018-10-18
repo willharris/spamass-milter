@@ -1,0 +1,25 @@
+Source: spamass-milter
+Section: mail
+Priority: extra
+Standards-Version: 3.9.2
+Build-Depends: libmilter-dev, debhelper (>= 9), groff-base, autotools-dev
+Maintainer: Don Armstrong <don@debian.org>
+Vcs-Svn: svn://svn.donarmstrong.com/deb_pkgs/spamass-milter/trunk
+Vcs-Browser: http://wsvn.donarmstrong.com/deb_pkgs/spamass-milter/trunk
+
+Package: spamass-milter
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, spamc, adduser
+Recommends: spamassassin, sendmail|postfix
+Homepage: http://savannah.nongnu.org/projects/spamass-milt/
+Description: milter for filtering mail through spamassassin
+ A milter used to filter mail through spamassassin (spamc)
+ early in the delivery process. Enables site wide filtering through
+ spamassassin without speed penalties incured by setting up and
+ tearing down procmail processes for each e-mail.
+ .
+ Will work with sendmail, postfix, or any other MTA which can use milters.
+ .
+  - Administrator (or user) specified rejection threshold
+  - User specific spamassassin settings
+  - Header-only modification

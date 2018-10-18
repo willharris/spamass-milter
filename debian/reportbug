@@ -1,0 +1,31 @@
+#!/bin/sh -e
+
+# Stolen from apt's reportbug scripts
+
+# reportbug #169495
+if [ -z "$YESNO" ]; then
+  YESNO=$"yYnN"
+fi
+
+cat <<EOF
+I can automatically include various information about your
+spamass-milter configuration in your bug report.  This information may
+help to diagnose your problem.
+
+If you have a segfault or similar to report, please see the debugging
+information in /usr/share/doc/spamass-milter/README.Debian and
+consider building a debugging version of spamass-milter so that your
+problem can be diagnosed and fixed.
+
+EOF
+
+yesno "May I include your spamass-milter configuration (/etc/default/spamass-milter, /etc/init.d/spamass-milter and /etc/mail/sendmail.mc)? [Y/n] " yep
+
+if [ "$REPLY" = "yep" ]; then
+  echo -e "\n-- /etc/default/spamass-milter --\n" >&3
+  cat /etc/default/spamass-milter >&3 || true
+  echo -e "\n-- /etc/init.d/spamass-milter --\n"
+  cat /etc/init.d/spamass-milter >&3 || true
+  echo -e "\n-- /etc/mail/sendmail.mc --\n"
+  cat /etc/mail/sendmail.mc >&3 || true
+fi

@@ -1,0 +1,136 @@
+--------------------------------------------------------------
+  Integrating spamass-milter into your sendmail installation
+--------------------------------------------------------------
+
+You will need to edit /etc/mail/sendmail.mc and add an
+INPUT_MAIL_FILTER line that connects to the spamass-milter socket.
+
+By default the spamass-milter socket is
+/var/run/spamass/spamass.sock; so your INPUT_MAIL_FILTER should look
+something like:
+
+ # spamassassin settings
+ INPUT_MAIL_FILTER(`spamassassin',
+         `S=local:/var/run/spamass/spamass.sock, F=,
+         T=S:4m;R:4m;E:10m')dnl
+ define(`confMILTER_MACROS_CONNECT',`t, b, j, _, {daemon_name}, {if_name}, {if_addr}')dnl
+ define(`confMILTER_MACROS_HELO',`s, {tls_version}, {cipher}, {cipher_bits}, {cert_subject}, {cert_issuer}')dnl
+ define(`confMILTER_MACROS_ENVRCPT',`b, i, j, r, v, Z, _')dnl
+
+Briefly, the F=, tells sendmail to just pass the connection through if
+the milter fails. This is most likely the setting you want. If you
+want to temporarily fail a connection, you can set F=T. You almost
+definitely don't want to reject connections, but if necessary, you can
+do that by setting F=R.
+
+You may also need to adjust these timeout settings, as spamd can be
+sluggish on a slow machine. S is the timeout for sending information
+from the MTA to a filter. R is the timeout for reading a reply from
+the filter. E is the overall timeout between sending end-of-message to
+filter and waiting for the final acknowledgment.
+
+The settings above seem to work well on a Celeron 466 that receives
+around 1000 emails an hour. You may wish to adjust them according to
+your needs.
+
+See http://www.sendmail.com/partner/resources/development/milter_api/installation.html
+and http://www.sendmail.org/m4/adding_mailfilters.html#INPUT_MAIL_FILTER
+for more information on milters.
+
+If you are using the alias expansion method, -x, you will need to add
+spamass-milter to the smmsp group using:
+
+ adduser spamass-milter smmsp;
+
+This does not need to be done unless you are using alias expansion.
+
+--------------------------------------------------------------
+  Integrating spamass-milter into your postfix installation
+--------------------------------------------------------------
+
+You need to edit /etc/postfix/main.cf and configure smptpd_milters so
+that postfix connects to the spamass-milter socket. Something like:
+
+  # spamass-milter configuration
+  smtpd_milters = unix:/var/spool/postfix/spamass/spamass.sock
+
+should work. Note, however, if you're using a chrooted version of
+postfix, you'll need the local path to the socket inside of the
+chroot. In recent versions of Debian the following should work:
+
+  # spamass-milter configuration
+  smtpd_milters = unix:/spamass/spamass.sock
+  # milter macros useful for spamass-milter
+  milter_connect_macros = j {daemon_name} v {if_name} _
+
+See http://www.postfix.org/MILTER_README.html or
+/usr/share/doc/postfix/MILTER_README.gz (in postfix-doc) for
+information on how to set tempfail and the various timeouts that the
+sendmail configuration above uses.
+
+The defaults for spamass-milter adjust themselves so that no
+configuration in /etc/default/spamass-milter should be required.
+[However, if you are not doing so, see below.]
+
+-------------------------------------------------------------
+  Adjusting how spamass-milter is started
+-------------------------------------------------------------
+
+You can adjust how spamass-milter starts, and the options it calls
+spamc with by adjusting /etc/default/spamass-milter. OPTIONS is passed
+directly to spamass-milter by /etc/init.d/spamass-milter. [Refer to
+spamass-milter(1) for details.]
+
+Other settings which may be of use:
+
+SOCKET sets the location of the socket; defaults to
+/var/run/spamass/spamass.sock unless you are running postfix, where it
+is set to /var/spool/postfix/spamass/spamass.sock.
+
+SOCKETOWNER is the owner of the socket, which defaults to root:root or
+postfix:postfix if you're running postfix.
+
+SOCKETMODE is the mode of the socket, which defaults to 0600 or 0660
+if you're running postfix.
+
+RUNAS controls the user which spamass-milter runs as; defaults to
+spamass-milter.
+
+If you want to use an inet socket for spamass-milter (like inet:9999
+or inet:9999@127.0.0.1), then you'll need to make the following
+configuration changes in /etc/default/spamass-milter:
+
+SOCKET="inet:9999@127.0.0.1"
+SOCKETMODE=""
+SOCKETOWNER=""
+
+-------------------------------------------------------------
+Debugging spamass-milter
+-------------------------------------------------------------
+
+As spamass-milter is still undergoing development, you may see bugs
+from time to time.
+
+If spamass-milter is segfaulting (SEGV or SIG 11) please build a
+debugging version of the spamass-milter package and install it:
+
+mkdir temp;
+cd temp;
+apt-get source spamass-milter;
+apt-get build-dep spamass-milter;
+cd spamass-milter-*;
+DEB_BUILD_OPTIONS='nostrip' CXXFLAGS='-O0 -g' fakeroot debian/rules clean binary;
+dpkg -i spamass-milter*.deb;
+
+Then turn on coredumps (ulimit -c unlimited), and start spamass-milter
+as usual (/etc/init.d/spamass-milter start).
+
+When spamass-milter cores, run gdb on the core, ala:
+gdb /usr/sbin/spamass-milter /foo/corefile.pid
+thread apply all where
+bt
+q
+
+and send the results along with your bug report using reportbug.
+
+ -- Don Armstrong <don@debian.org>, Wed, 11 Mar 2009 03:51:55 -0700

@@ -1,0 +1,77 @@
+$Id: NEWS,v 1.26 2011/02/14 21:31:30 dnelson Exp $
+
+0.3.2: (2011-02-10)
+ * Fix security vulnerability with the -x option
+
+0.3.1: (2006-03-23)
+ * Ensure wrapped headers always use LF (fix for spamassassin 3.1.1)
+ * Mimic sendmail's Received header even better.  Logs a warning
+   to syslog if it can't fetch a sendmail macro that would help.
+
+0.3.0: (2005-02-03)
+ * -M option which disables all message modifications
+ * Fixed crash on spam with no body at all
+ * -e option to pass full recipient email address to spamc
+ * -x option to expand recipient list with sendmail -bv
+ * -f truly daemonizes now, instead of simply forking
+ * -P option to create a pidfile
+ * Supports both Spamassassin 2.x and 3.0 X-Spam-Status: headers
+ * Fixed possible crash when a fork() call fails
+
+0.2.0: (2003-06-26)
+ * -b/-B options to redirect tagged messages to another email address.
+ * -i option to not run spamassassin on messages coming from specified
+   networks.
+ * All arguments after -- will get passed to spamc (deprecate -D at the
+   same time).
+ * Envelope, remote IP, HELO, and date get sent to spamc, so the
+   results more closely match what spamc via procmail sees.  A lot of
+   SA rules could never fire because this data was missing. You will
+   need to add a line to your sendmail config file to enable date
+   passing (see README).
+ * A compatible manpage is generated on systems without mdoc macros.
+ * Incoming messages with absolutely no headers at all now get checked
+   correctly
+
+0.1.3a: (2002-12-31)
+ * Fixed hanging problem when processing a message with no headers at
+   all.  Sort of serious, so it gets its own release.
+
+0.1.3: (2002-12-27)
+ * -m option disables body, Subject:, and Content-Type: header
+   modification.
+ * -r option tells sendmail to reject the message if it exceeds a given
+   score.
+ * -u option passes recipient username to spamc.
+ * Fixed illegal use of freed memory causing message loss on some
+   platforms.
+ * Fixed header doubling problem, and cleaned up the case where
+   incoming messages already have X-Spam* headers
+ * Updated RPM files.
+
+0.1.2: (2002-08-18)
+ * Many portability fixes.  Should build on any *BSD, Linux, Solaris,
+   or Tru64 box, with any milter-compatible sendmail, with any
+   compiler.
+ * Fixed the "250K deadlock" bug.
+ * Subject and Content-Types headers are only replaced if they changed. 
+   This makes /var/log/maillog a bit cleaner for servers that get mail
+   that has already been run through SpamAssassin.  The mail is still
+   checked, so you can't bypass anything by adding SA headers.
+ * Added SpamAssassin field "X-Spam-Level".
+ * Added a manpage.
+ * Added RedHat spec files.
+ * -f option forks the milter into the background.
+ * -d debugging option.
+
+0.1.1: (2002-01-31)
+ * Added SpamAssassin 2.0+ field "X-Spam-Checker-Version"
+ * Changed behaviour as follows:
+   - Old (already present) "X-Spam" fields are passed to SpamAssassin again,
+     now it is up to SpamAssassin to make sure its not being lied to by 
+     Spammers. 
+   - Only mail that was previously marked being no Spam will get modified.
+     Reported Spam will remain unchanged.
+
+0.1.0: (2002-01-16)
+ * First release. What do you expect? :-)
