@@ -195,6 +195,7 @@ void debug(enum debuglevel, const char* fmt, ...) __printflike(2, 3);
 string::size_type find_nocase(const string&, const string&, string::size_type = 0);
 int cmp_nocase_partial(const string&, const string&);
 void closeall(int fd);
+void parse_headerlist(const char *string);
 void parse_networklist(char *string, struct networklist *list);
 int ip_in_networklist(struct sockaddr *addr, struct networklist *list);
 void parse_debuglevel(char* string);
