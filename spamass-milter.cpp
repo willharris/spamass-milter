@@ -173,8 +173,7 @@ bool flag_expand = false;	/* alias/virtusertable expansion */
 bool ignore_authenticated_senders = false;
 bool warnedmacro = false;	/* have we logged that we couldn't fetch a macro? */
 
-// List of headers set based on spamc results
-list <string> spam_headers;
+string headerlist;
 
 // {{{ main()
 
@@ -266,7 +265,7 @@ main(int argc, char* argv[])
 				flag_expand = true;
 				break;
 			case 'h':
-				parse_headerlist(optarg);
+				headerlist = optarg;
 				break;
 			case '?':
 				err = 1;
@@ -371,22 +370,70 @@ main(int argc, char* argv[])
 
 // }}}
 
-/* Update a header if SA changes it, or add it if it is new. */
-void update_or_insert(SpamAssassin* assassin, SMFICTX* ctx, string oldstring, t_setter setter, const char *header )
+string
+get_header_from_spamc(SpamAssassin* assassin, const char* header)
 {
+	debug(D_UORI, "u_or_i: looking at <%s>", header);
+
 	string::size_type eoh1 = assassin->d().find("\n\n");
 	string::size_type eoh2 = assassin->d().find("\n\r\n");
 	string::size_type eoh = ( eoh1 < eoh2 ? eoh1 : eoh2 );
 
-	string newstring;
-	string::size_type oldsize;
+	string newstring = retrieve_field(assassin->d().substr(0, eoh), header);
 
-	debug(D_UORI, "u_or_i: looking at <%s>", header);
-	debug(D_UORI, "u_or_i: oldstring: <%s>", oldstring.c_str());
-
-	newstring = retrieve_field(assassin->d().substr(0, eoh), header);
 	debug(D_UORI, "u_or_i: newstring: <%s>", newstring.c_str());
 
+    return newstring;
+}
+
+// Add any requested headers returned from spamc to the message
+void
+process_spamc_headers(SpamAssassin* assassin, SMFICTX* ctx)
+{
+    debug(D_FUNC, "::process_spamc_headers: enter");
+    char* token;
+
+    char *cheaderlist = strdup(headerlist.c_str());
+
+    string oldval, newval;
+	while ((token = strsep(&cheaderlist, ",")))
+    {
+        oldval = assassin->get_header(token);
+        newval = get_header_from_spamc(assassin, token);
+
+        debug(D_UORI, "u_or_i: oldval<%s>", oldval.c_str());
+        debug(D_UORI, "u_or_i: newval<%s>", newval.c_str());
+
+        if (oldval.size() > 0) {
+            if (oldval != newval) {
+                /* change if old one was present, append if non-null */
+                char* cstr = const_cast<char*>(newval.c_str());
+
+                debug(D_UORI, "u_or_i: changing %s", token);
+                smfi_chgheader(ctx, token, 1, newval.size() > 0 ? cstr : NULL );
+            } else {
+                debug(D_UORI, "u_or_i: no change to oldval");
+            }
+        } else if (newval.size() > 0) {
+            debug(D_UORI, "u_or_i: inserting %s", token);
+            char* cstr = const_cast<char*>(newval.c_str());
+            smfi_addheader(ctx, token, cstr);
+        }
+    }
+
+    free(cheaderlist);
+
+    debug(D_FUNC, "::process_spamc_headers: exit");
+}
+
+/* Update a header if SA changes it, or add it if it is new. */
+void update_or_insert(SpamAssassin* assassin, SMFICTX* ctx, string oldstring, t_setter setter, const char *header )
+{
+    string newstring = get_header_from_spamc(assassin, header);
+
+	debug(D_UORI, "u_or_i: oldstring: <%s>", oldstring.c_str());
+
+	string::size_type oldsize;
 	oldsize = callsetter(*assassin,setter)(newstring);
       
 	if (!dontmodify)
@@ -529,6 +576,10 @@ assassinate(SMFICTX* ctx, SpamAssassin* assassin)
   update_or_insert(assassin, ctx, assassin->spam_prev_content_type(), &SpamAssassin::set_spam_prev_content_type, "X-Spam-Prev-Content-Type");
   update_or_insert(assassin, ctx, assassin->spam_level(), &SpamAssassin::set_spam_level, "X-Spam-Level");
   update_or_insert(assassin, ctx, assassin->spam_checker_version(), &SpamAssassin::set_spam_checker_version, "X-Spam-Checker-Version");
+
+  if (headerlist.size() > 0) {
+    process_spamc_headers(assassin, ctx);
+  }
 
   // 
   // If SpamAssassin thinks it is spam, replace
@@ -1090,6 +1141,11 @@ mlfi_header(SMFICTX* ctx, char* headerf, char* headerv)
 	assassin->set_spam_level(headerv);
       else if ( cmp_nocase_partial("X-Spam-Checker-Version", headerf) == 0 )
 	assassin->set_spam_checker_version(headerv);
+      else if (find_nocase(headerlist, headerf) != string::npos) {
+          // the header is in the list
+          debug(D_STR, "mlfi_header: found additional header: %s", headerf);
+          assassin->set_header(headerf, headerv);
+      }
       else
       {
       	/* Hm. X-Spam header, but not one we recognize.  Pass it through. */
@@ -1826,6 +1882,22 @@ SpamAssassin::set_connectip(const string& val)
   return (old);  
 }
 
+const string
+SpamAssassin::get_header(const string& header) const
+{
+    try {
+        return headers.at(header);
+    } catch (out_of_range&) {
+        return "";
+    }
+}
+
+void
+SpamAssassin::set_header(const string& header, const string& value)
+{
+    headers[header] = string(value);
+}
+
 //
 // Read available output from SpamAssassin client
 //
@@ -2063,20 +2135,6 @@ void closeall(int fd)
 	int fdlimit = sysconf(_SC_OPEN_MAX); 
 	while (fd < fdlimit) 
 		close(fd++); 
-}
-
-void parse_headerlist(const char *headerlist)
-{
-	char* input = strdup(headerlist);
-	
-	char * token;
-
-	while ((token = strsep(&input, ",")))
-	{
-		cout << token << endl;
-	}
-
-	free(input);
 }
 
 void parse_networklist(char *string, struct networklist *list)
