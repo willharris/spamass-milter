@@ -36,6 +36,7 @@
 #endif
 
 #include <list>
+#include <map>
 
 using namespace std;
 
@@ -134,9 +135,14 @@ public:
   string::size_type set_from(const string&);
   string::size_type set_connectip(const string&);
 
+  const string get_header(const string& header) const;
+  void set_header(const string& header_name, const string& header_value);
+
 private:
   void empty_and_close_pipe();
   int read_pipe();
+
+  map <string, string> headers;
 
 public:  
   // flags
