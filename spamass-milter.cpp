@@ -149,7 +149,7 @@ struct smfiDesc smfilter =
 
 const char *const debugstrings[] = {
 	"ALL", "FUNC", "POLL", "UORI", "STR", "MISC", "NET", "SPAMC", "RCPT",
-	"COPY",
+	"COPY", "HDRS",
 	NULL
 };
 
@@ -279,6 +279,12 @@ main(int argc, char* argv[])
       err=1;
    }
 
+   if (dontmodify && headerlist.size() > 0)
+   {
+       fprintf(stderr, "specifying -M and -h together makes no sense\n");
+       err = 1;
+   }
+
    /* remember the remainer of the arguments so we can pass them to spamc */
    spamc_argc = argc - optind;
    spamc_argv = argv + optind;
@@ -287,7 +293,7 @@ main(int argc, char* argv[])
       cout << PACKAGE_NAME << " - Version " << PACKAGE_VERSION << endl;
       cout << "SpamAssassin Sendmail Milter Plugin" << endl;
       cout << "Usage: spamass-milter -p socket [-b|-B bucket] [-d xx[,yy...]] [-D host]" << endl;
-      cout << "                      [-e defaultdomain] [-f] [-h headerlist] [-i networks] [-I]" << endl;
+      cout << "                      [-e defaultdomain] [-f] [-h headers] [-i networks] [-I]" << endl;
       cout << "                      [-m] [-M] [-P pidfile] [-r nn] [-u defaultuser] [-x]" << endl;
       cout << "                      [-- spamc args ]" << endl;
       cout << "   -p socket: path to create socket" << endl;
@@ -299,8 +305,9 @@ main(int argc, char* argv[])
       cout << "   -e defaultdomain: pass full email address to spamc instead of just\n"
               "          username.  Uses 'defaultdomain' if there was none" << endl;
       cout << "   -f: fork into background" << endl;
-			cout << "   -h headerlist: include these headers from the spamc output" << endl;
-			cout << "          example: -h Relay-Countries,DCC" << endl;
+      cout << "   -h headers: comma-separated list of additional headers from the\n"
+              "          spamc output to include.\n"
+              "          example: -h X-Spam-Relay-Countries,X-Spam-DCC" << endl;
       cout << "   -i: skip (ignore) checks from these IPs or netblocks" << endl;
       cout << "          example: -i 192.168.12.5,10.0.0.0/8,172.16.0.0/255.255.0.0" << endl;
       cout << "   -I: skip (ignore) checks if sender is authenticated" << endl;
@@ -373,15 +380,11 @@ main(int argc, char* argv[])
 string
 get_header_from_spamc(SpamAssassin* assassin, const char* header)
 {
-	debug(D_UORI, "u_or_i: looking at <%s>", header);
-
 	string::size_type eoh1 = assassin->d().find("\n\n");
 	string::size_type eoh2 = assassin->d().find("\n\r\n");
 	string::size_type eoh = ( eoh1 < eoh2 ? eoh1 : eoh2 );
 
 	string newstring = retrieve_field(assassin->d().substr(0, eoh), header);
-
-	debug(D_UORI, "u_or_i: newstring: <%s>", newstring.c_str());
 
     return newstring;
 }
@@ -390,7 +393,7 @@ get_header_from_spamc(SpamAssassin* assassin, const char* header)
 void
 process_spamc_headers(SpamAssassin* assassin, SMFICTX* ctx)
 {
-    debug(D_FUNC, "::process_spamc_headers: enter");
+    debug(D_FUNC, "p_s_headers: enter");
     char* token;
 
     char *cheaderlist = strdup(headerlist.c_str());
@@ -398,32 +401,36 @@ process_spamc_headers(SpamAssassin* assassin, SMFICTX* ctx)
     string oldval, newval;
 	while ((token = strsep(&cheaderlist, ",")))
     {
+        debug(D_HDRS, "p_s_headers: processing header <%s>", token);
+
         oldval = assassin->get_header(token);
         newval = get_header_from_spamc(assassin, token);
 
-        debug(D_UORI, "u_or_i: oldval<%s>", oldval.c_str());
-        debug(D_UORI, "u_or_i: newval<%s>", newval.c_str());
+        debug(D_HDRS, "p_s_headers: oldval <%s>", oldval.c_str());
+        debug(D_HDRS, "p_s_headers: newval <%s>", newval.c_str());
 
         if (oldval.size() > 0) {
             if (oldval != newval) {
-                /* change if old one was present, append if non-null */
                 char* cstr = const_cast<char*>(newval.c_str());
 
-                debug(D_UORI, "u_or_i: changing %s", token);
+                debug(D_HDRS, "p_s_headers: changing <%s>", token);
+
                 smfi_chgheader(ctx, token, 1, newval.size() > 0 ? cstr : NULL );
             } else {
-                debug(D_UORI, "u_or_i: no change to oldval");
+                debug(D_HDRS, "p_s_headers: no change");
             }
         } else if (newval.size() > 0) {
-            debug(D_UORI, "u_or_i: inserting %s", token);
             char* cstr = const_cast<char*>(newval.c_str());
+
+            debug(D_HDRS, "p_s_headers: inserting <%s>", token);
+
             smfi_addheader(ctx, token, cstr);
         }
     }
 
     free(cheaderlist);
 
-    debug(D_FUNC, "::process_spamc_headers: exit");
+    debug(D_FUNC, "p_s_headers: exit");
 }
 
 /* Update a header if SA changes it, or add it if it is new. */
@@ -432,6 +439,7 @@ void update_or_insert(SpamAssassin* assassin, SMFICTX* ctx, string oldstring, t_
     string newstring = get_header_from_spamc(assassin, header);
 
 	debug(D_UORI, "u_or_i: oldstring: <%s>", oldstring.c_str());
+	debug(D_UORI, "u_or_i: newstring: <%s>", newstring.c_str());
 
 	string::size_type oldsize;
 	oldsize = callsetter(*assassin,setter)(newstring);
@@ -658,6 +666,7 @@ retrieve_field(const string& header, const string& field)
 
 	// no match
 	if ( idx == string::npos ) {
+      debug(D_STR, "r_f: failed");
 	  return string( "" );
 	}
 
@@ -683,6 +692,7 @@ retrieve_field(const string& header, const string& field)
   // See if there's anything left, to shortcut the rest of the
   // function.
   if ( field_start == header.length() - 1 ) {
+    debug(D_STR, "r_f: failed2");
 	return string( "" );
   }
 
@@ -709,6 +719,8 @@ retrieve_field(const string& header, const string& field)
   if (header[field_end-1] == '\r')
   	field_end--;
 
+  debug(D_STR, "r_f: start <%d> end <%d>", field_start, field_end);
+
   string data = header.substr( field_start, field_end - field_start );
   
   /* Replace all CRLF pairs with LF */
@@ -717,6 +729,8 @@ retrieve_field(const string& header, const string& field)
   {
   	data.replace(idx,2,"\n");
   }
+
+  debug(D_STR, "r_f: result <%s>", data.c_str());
 
   return data;
 }
@@ -1143,7 +1157,7 @@ mlfi_header(SMFICTX* ctx, char* headerf, char* headerv)
 	assassin->set_spam_checker_version(headerv);
       else if (find_nocase(headerlist, headerf) != string::npos) {
           // the header is in the list
-          debug(D_STR, "mlfi_header: found additional header: %s", headerf);
+          debug(D_HDRS, "mlfi_header: found existing additional header: %s", headerf);
           assassin->set_header(headerf, headerv);
       }
       else
