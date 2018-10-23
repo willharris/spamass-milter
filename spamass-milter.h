@@ -89,7 +89,7 @@ struct networklist
 enum debuglevel 
 {
 	D_ALWAYS, D_FUNC, D_POLL, D_UORI, D_STR, D_MISC, D_NET, D_SPAMC, D_RCPT,
-	D_COPY,
+	D_COPY, D_HDRS,
 	D_MAX // must be last
 };
 

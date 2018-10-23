@@ -21,6 +21,7 @@
 .Op Fl r Ar nn
 .Op Fl u Ar defaultuser
 .Op Fl x
+.Op Fl h Ar headers
 .Op Fl - Ar spamc flags ...
 .Sh DESCRIPTION
 The
@@ -74,6 +75,10 @@ High-level I/O to the child spamc process.
 Calls to field lookup and string comparison functions.
 .It uori
 Calls to the update_or_insert function.
+.It hdrs
+Processing of additional spamc headers (for the
+.Fl h
+option).
 .It 1
 (historical) Same as 
 .Ar func,misc .
@@ -201,7 +206,24 @@ which will perform virtusertable and alias expansion.
 The resulting username is then passed to spamc.
 Requires the
 .Fl u
-flag.  
+flag.
+.It Fl h Ar headers
+A comma-separated list of headers to include from the
+.Nm spamc
+output. By default, the only headers included in the output are
+.Nm X-Spam-Status ,
+.Nm X-Spam-Flag ,
+.Nm X-Spam-Report ,
+.Nm X-Spam-Prev-Content-Type ,
+.Nm X-Spam-Level ,
+.Nm X-Spam-Checker-Version .
+If you have added additional headers using the SpamAssassin
+.Nm add_header
+configuration option, these will not be included without this
+option. Note: headers are usually prefixed with 'X-Spam-'.
+Example:
+.Fl h
+.Nm X-Spam-Relay-Countries,X-Spam-DCC .
 .It Fl - Ar spamc flags ...
 Pass all remaining options to spamc. 
 This allows you to connect to a remote spamd with
