@@ -2,11 +2,9 @@ Description: Fix spacing in the received header
 Author: Marco d'Itri <md@linux.it>
 Bug: #510665
 Forwarded: no
-Index: spamass-milter/spamass-milter.cpp
-===================================================================
---- spamass-milter.orig/spamass-milter.cpp	2012-06-21 13:02:06.000000000 -0700
-+++ spamass-milter/spamass-milter.cpp	2012-06-21 13:02:08.000000000 -0700
-@@ -967,7 +967,7 @@
+--- a/spamass-milter.cpp
++++ b/spamass-milter.cpp
+@@ -1018,7 +1018,7 @@
  
  		assassin->output((string)
  			"Received: from "+macro_s+" ("+macro__+")\r\n\t"+

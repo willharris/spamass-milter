@@ -12,10 +12,10 @@
 OPTIONS="-u spamass-milter -i 127.0.0.1"
 
 # Reject emails with spamassassin scores > 15.
-#OPTIONS="-r 15"
+#OPTIONS="${OPTIONS} -r 15"
 
 # Do not modify Subject:, Content-Type: or body.
-#OPTIONS="-m"
+#OPTIONS="${OPTIONS} -m"
 
 ######################################
 # If /usr/sbin/postfix is executable, the following are set by

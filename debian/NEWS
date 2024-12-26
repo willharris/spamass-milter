@@ -1,0 +1,36 @@
+spamass-milter (0.3.1-6) unstable; urgency=low
+
+  * Note that users of postfix may wish to add "milter_connect_macros = j
+    {daemon_name} v {if_name} _" to their main.cf if they haven't already
+    done so. See README.Debian.
+
+ -- Don Armstrong <don@debian.org>  Mon, 05 Jan 2009 13:04:21 -0800
+
+spamass-milter (0.3.1-5) unstable; urgency=low
+
+  * spamass-milter now tries to run as spamass-milter. This means that the
+    socket can no longer be located in /var/run/sendmail/spamass.sock and
+    must be moved to /var/run/spamass/spamass.sock. The init.d script
+    checks for the old location and reverts to running as root with a
+    warning. To switch to the new behavoir, change your
+    /etc/mail/localconf.m4 appropriately (or wherever you specify
+    milters.)
+  
+  * The default for unknown users is now the spamass-milter user, which is
+    passed to spamc. Its home directory is /var/lib/spamass-milter. If you
+    wish to use a different user, simply edit /etc/defaults/spamass-milter
+  
+  * spamass-milter now attempts to automatically detect postfix installs
+    and set up SOCKET, RUNAS, SOCKETOWNER, and SOCKETMODE appropriately.
+
+ -- Don Armstrong <don@debian.org>  Mon, 19 Feb 2007 16:10:19 -0800
+
+spamass-milter (0.3.0-2) unstable; urgency=low
+
+  * spamass-milter now has a (currently not available upstream) -I option
+    which will allow authenticated senders to skip SA checks in outbound
+    mail. As this option is not yet integrated in upstream, the actually
+    command line option may change in the future. You Have Been Warned.
+
+ -- Don Armstrong <don@debian.org>  Fri, 23 Dec 2005 03:28:31 -0800
+

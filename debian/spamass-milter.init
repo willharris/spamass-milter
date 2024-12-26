@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: spamass-milter.init 553 2011-06-14 00:30:42Z don $
+# $Id$
 #
 # Sample init script for Debian GNU/Linux
 #
@@ -90,6 +90,10 @@ fi;
 set -e
 
 start() {
+    if [ -e $PIDFILE ] && kill -0 $(cat $PIDFILE); then
+        echo "$NAME is already running";
+        exit 1;
+    fi;
     # Because the default socket is in the same location as the
     # pidfile, we create them in this order.
     for DIR in "$(dirname $PIDFILE)" "$(dirname $SOCKET)"; do 
@@ -120,34 +124,38 @@ start() {
 	/bin/rm -f $SOCKET
     fi;
     start-stop-daemon --start -p $PIDFILE $CHUID --exec $DAEMON -- -P $PIDFILE -f -p $SOCKET $OPTIONS
-    sleep 1s
-    if [ -n "$SOCKETMODE" ]; then
-	chmod $SOCKETMODE $SOCKET;
-    fi;
-    if [ -n "$SOCKETOWNER" ]; then
-	chown $SOCKETOWNER $SOCKET;
+    sleep 1
+    if [ $(dirname $SOCKET) != "." ]; then
+       if [ -n "$SOCKETMODE" ]; then
+	       chmod $SOCKETMODE $SOCKET;
+       fi;
+       if [ -n "$SOCKETOWNER" ]; then
+	       chown $SOCKETOWNER $SOCKET;
+       fi;
     fi;
 }
 
 stop(){
     start-stop-daemon --oknodo --stop -p $PIDFILE --signal 3 --exec $DAEMON
-    /bin/sleep 5s
-    /bin/rm -f $SOCKET
+    /bin/sleep 5
+    if [ $(dirname $SOCKET) != "." ]; then 
+	    /bin/rm -f $SOCKET
+    fi;
     /bin/rm -f $PIDFILE
 }
 
 status(){
     if [ -e $PIDFILE ]; then 
-	if kill -0 $(cat $PIDFILE); then
-	    echo "${NAME} running";
-	    exit 0;
-	else
-	    echo "${NAME} dead but $PIDFILE exists";
-	    exit 1;
+	    if kill -0 $(cat $PIDFILE); then
+	        echo "${NAME} running";
+	        exit 0;
+	    else
+	        echo "${NAME} dead but $PIDFILE exists";
+	        exit 1;
+	    fi;
 	fi;
-	echo "${NAME} not running";
+    echo "${NAME} not running";
 	exit 3;
-    fi;
 }
 
 case "$1" in

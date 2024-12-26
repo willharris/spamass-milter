@@ -1,3 +1,46 @@
+spamass-milter (0.4.0-2) unstable; urgency=medium
+
+  * Call the i macro only after envrcpt time. (closes: #696856)
+  * Document milter env variables (closes: #816799)
+  * Do not remove the socket if spamass-milter is already running (closes:
+    #782252)
+  * Enable the hardening flags (closes: #879671)
+  * Create a home directory for the spamass-milter user, because we use it
+    as the default for spamassassin (Closes: #696861)
+  * Remove the pointless s suffix in spamass-milter.init (closes: #772368)
+  * Don't bother to remove inet sockets or try to chown/chmod them.
+    (closes: #767966)
+
+ -- Don Armstrong <don@debian.org>  Sat, 15 Aug 2020 12:22:41 -0700
+
+spamass-milter (0.4.0-1) unstable; urgency=medium
+
+  * New upstream release
+  * Refresh patches
+  * Remove debian ipv6 patch and header cast patch which were upstreamed
+  * Fix spacing and missing semicolon on Received: header (closes:
+    #775183)
+
+ -- Don Armstrong <don@debian.org>  Thu, 06 Aug 2015 20:45:55 -0700
+
+spamass-milter (0.3.2-3) UNRELEASED; urgency=low
+
+  * Remove /var/spool/postfix/spamass on purge if it exists (closes:
+    #729072)
+
+ -- Don Armstrong <don@debian.org>  Fri, 08 Nov 2013 10:34:29 -0800
+
+spamass-milter (0.3.2-2) unstable; urgency=low
+
+  * Make it more clear that OPTIONS can only be set once in the
+    configuration file (Thanks to Matt Jamison) (closes: #695809).
+  * Document that the i macro should be given for postfix. (closes:
+    #696856)
+  * Create a spamass-milter group and a /var/lib/spamass-milter directory;
+    make the primary group id spamass-milter. (Closes: #696861)
+
+ -- Don Armstrong <don@donarmstrong.com>  Wed, 12 Dec 2012 17:05:17 -0800
+
 spamass-milter (0.3.2-1) unstable; urgency=low
 
   * New upstream release

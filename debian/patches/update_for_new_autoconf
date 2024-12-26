@@ -1,0 +1,18 @@
+--- a/configure.in
++++ b/configure.in
+@@ -18,12 +18,12 @@
+ AC_LANG(C++)
+ 
+ # Enable useable exception handler if it exists.
+-AC_CXX_VERBOSE_TERMINATE_HANDLER
++# AC_CXX_VERBOSE_TERMINATE_HANDLER
+ 
+ # Try and disable all inlining; gdb shows the inlined function in a
+ # stack trace and you lose the caller's frame.  Bad for debugging.
+-AC_PIKE_COMPILER_FLAG(-fno-default-inline,fno_default_inline,CXXFLAGS)
+-AC_PIKE_COMPILER_FLAG(-fno-inline,fno_inline,CXXFLAGS)
++# AC_PIKE_COMPILER_FLAG(-fno-default-inline,fno_default_inline,CXXFLAGS)
++# AC_PIKE_COMPILER_FLAG(-fno-inline,fno_inline,CXXFLAGS)
+ 
+ #PIKE_INCLUDE_PATHS
+ #PIKE_LIBRARY_PATHS

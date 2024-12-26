@@ -1,11 +1,9 @@
 Description: Add ignore authenticated senders option
 From: Paul Traina <reportbug@st04.pst.org>
 Bug: #301755
-Index: spamass-milter/spamass-milter.1.in
-===================================================================
---- spamass-milter.orig/spamass-milter.1.in	2012-06-21 12:53:44.000000000 -0700
-+++ spamass-milter/spamass-milter.1.in	2012-06-21 12:56:56.000000000 -0700
-@@ -14,6 +14,7 @@
+--- a/spamass-milter.1.in
++++ b/spamass-milter.1.in
+@@ -15,6 +15,7 @@
  .Op Fl e Ar defaultdomain
  .Op Fl f
  .Op Fl i Ar networks
@@ -13,7 +11,7 @@ Index: spamass-milter/spamass-milter.1.in
  .Op Fl m
  .Op Fl M
  .Op Fl P Ar pidfile
-@@ -119,6 +120,8 @@
+@@ -127,6 +128,8 @@
  flags will append to the list.
  For example, if you list all your internal networks, no outgoing emails
  will be filtered.
@@ -22,48 +20,46 @@ Index: spamass-milter/spamass-milter.1.in
  .It Fl m
  Disables modification of the 
  .Ql Subject: 
-Index: spamass-milter/spamass-milter.cpp
-===================================================================
---- spamass-milter.orig/spamass-milter.cpp	2012-06-21 12:53:49.000000000 -0700
-+++ spamass-milter/spamass-milter.cpp	2012-06-21 12:56:56.000000000 -0700
-@@ -169,6 +169,7 @@
+--- a/spamass-milter.cpp
++++ b/spamass-milter.cpp
+@@ -175,6 +175,7 @@
  char *spambucket;
  bool flag_full_email = false;		/* pass full email address to spamc */
  bool flag_expand = false;	/* alias/virtusertable expansion */
 +bool ignore_authenticated_senders = false;
  bool warnedmacro = false;	/* have we logged that we couldn't fetch a macro? */
+ bool auth = false;		/* don't scan authenticated users */
  
- // {{{ main()
-@@ -177,7 +178,7 @@
+@@ -184,7 +185,7 @@
  main(int argc, char* argv[])
  {
     int c, err = 0;
--   const char *args = "fd:mMp:P:r:u:D:i:b:B:e:x";
-+   const char *args = "fd:mMp:P:r:u:D:i:Ib:B:e:x";
+-   const char *args = "afd:mMp:P:r:u:D:i:b:B:e:xS:R:C:";
++   const char *args = "afd:mMp:P:r:u:D:i:Ib:B:e:xS:R:C:";
     char *sock = NULL;
     bool dofork = false;
     char *pidfilename = NULL;
-@@ -209,6 +210,10 @@
- 				debug(D_MISC, "Parsing ignore list");
- 				parse_networklist(optarg, &ignorenets);
- 				break;
+@@ -220,6 +221,10 @@
+                 debug(D_MISC, "Parsing ignore list");
+                 parse_networklist(optarg, &ignorenets);
+                 break;
 +			case 'I':
 +				debug(D_MISC, "Ignore authenticated senders");
 +				ignore_authenticated_senders = true;
 +				break;
- 			case 'm':
- 				dontmodifyspam = true;
- 				smfilter.xxfi_flags &= ~SMFIF_CHGBODY;
-@@ -276,7 +281,7 @@
+             case 'm':
+                 dontmodifyspam = true;
+                 smfilter.xxfi_flags &= ~SMFIF_CHGBODY;
+@@ -296,7 +301,7 @@
        cout << PACKAGE_NAME << " - Version " << PACKAGE_VERSION << endl;
        cout << "SpamAssassin Sendmail Milter Plugin" << endl;
        cout << "Usage: spamass-milter -p socket [-b|-B bucket] [-d xx[,yy...]] [-D host]" << endl;
 -      cout << "                      [-e defaultdomain] [-f] [-i networks] [-m] [-M]" << endl;
 +      cout << "                      [-e defaultdomain] [-f] [-i networks] [-I] [-m] [-M]" << endl;
-       cout << "                      [-P pidfile] [-r nn] [-u defaultuser] [-x]" << endl;
+       cout << "                      [-P pidfile] [-r nn] [-u defaultuser] [-x] [-a]" << endl;
+       cout << "                      [-C rejectcode] [ -R rejectmsg ]" << endl;
        cout << "                      [-- spamc args ]" << endl;
-       cout << "   -p socket: path to create socket" << endl;
-@@ -290,6 +295,7 @@
+@@ -312,6 +317,7 @@
        cout << "   -f: fork into background" << endl;
        cout << "   -i: skip (ignore) checks from these IPs or netblocks" << endl;
        cout << "          example: -i 192.168.12.5,10.0.0.0/8,172.16.0.0/255.255.0.0" << endl;
@@ -71,10 +67,11 @@ Index: spamass-milter/spamass-milter.cpp
        cout << "   -m: don't modify body, Content-type: or Subject:" << endl;
        cout << "   -M: don't modify the message at all" << endl;
        cout << "   -P pidfile: Put processid in pidfile" << endl;
-@@ -746,6 +753,22 @@
+@@ -796,6 +802,22 @@
+       return SMFIS_ACCEPT;
+     }
    }
-   /* debug(D_ALWAYS, "ZZZ got private context %p", sctx); */
- 
++
 +  if (ignore_authenticated_senders)
 +  {
 +    char *auth_authen;
@@ -90,7 +87,6 @@ Index: spamass-milter/spamass-milter.cpp
 +      return SMFIS_ACCEPT;
 +    }
 +  }
-+
+ 
    debug(D_FUNC, "mlfi_envfrom: enter");
    try {
-     // launch new SpamAssassin

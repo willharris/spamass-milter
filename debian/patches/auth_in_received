@@ -3,11 +3,9 @@ Origin: https://www.linuxhacker.at/opensource-projects/spamass-milter
 Bug: #627989
 Author: Herbert Straub, Knut Arne Bjørndal <knut.arne.bjorndal@easyconnect.no>
 Forwarded: no
-Index: spamass-milter/spamass-milter.cpp
-===================================================================
---- spamass-milter.orig/spamass-milter.cpp	2012-06-21 13:03:42.000000000 -0700
-+++ spamass-milter/spamass-milter.cpp	2012-06-21 14:02:32.000000000 -0700
-@@ -898,7 +898,8 @@
+--- a/spamass-milter.cpp
++++ b/spamass-milter.cpp
+@@ -940,7 +940,8 @@
  		   
  		*/
  		const char *macro_b, *macro_i, *macro_j, *macro_r,
@@ -17,7 +15,7 @@ Index: spamass-milter/spamass-milter.cpp
  		char date[32];
  
  		/* RFC 822 date. */
-@@ -935,7 +936,22 @@
+@@ -977,7 +978,22 @@
  			macro_r = "SMTP";
  			warnmacro("r", "ENVRCPT");
  		}
@@ -41,7 +39,7 @@ Index: spamass-milter/spamass-milter.cpp
  		/* Sendmail currently cannot pass us the {s} macro, but
  		   I do not know why.  Leave this in for the day sendmail is
  		   fixed.  Until that day, use the value remembered by
-@@ -974,11 +990,22 @@
+@@ -1016,11 +1032,22 @@
  		assassin->output((string)"X-Envelope-From: "+assassin->from()+"\r\n");
  		assassin->output((string)"X-Envelope-To: "+envrcpt[0]+"\r\n");
  
@@ -57,11 +55,11 @@ Index: spamass-milter/spamass-milter.cpp
 +			}
 +			rec_header+=(string)")\r\n\t";
 +		}
-+		rec_header+=(string)"by "+macro_j+"("+macro_v+"/"+macro_Z+") with "+
++		rec_header+=(string)"by "+macro_j+" ("+macro_v+"/"+macro_Z+") with "+
 +			macro_r+" id "+macro_i+"\r\n\t"+
  			macro_b+"\r\n\t"+
 -			"(envelope-from "+assassin->from()+")\r\n");
-+			"(envelope-from "+assassin->from()+"\r\n";
++			"(envelope-from "+assassin->from()+");\r\n";
 +
 +		debug(D_SPAMC, "Received header for spamc: %s", rec_header.c_str());
 +		assassin->output(rec_header);

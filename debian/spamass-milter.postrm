@@ -8,6 +8,10 @@ case "$1" in
 	if [ -e /var/lib/spamass-milter ]; then
 	    rmdir --ignore-fail-on-non-empty /var/lib/spamass-milter
 	fi;
+	# remove /var/spool/postfix/spamass if it exists
+	if [ -e /var/spool/postfix/spamass ]; then
+	    rmdir --ignore-fail-on-non-empty /var/spool/postfix/spamass
+	fi;
 	;;
     *) 
 	# do nothing

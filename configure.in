@@ -1,8 +1,8 @@
 # Process this file with autoconf to produce a configure script.
-# $Id: configure.in,v 1.44 2011/02/14 21:31:30 dnelson Exp $
-AC_INIT(spamass-milter, 0.3.2)
+# $Id: configure.in,v 1.46 2014/09/11 00:43:25 kovert Exp $
+AC_INIT(spamass-milter, 0.4.0)
 AC_PREREQ(2.53)
-AC_REVISION($Revision: 1.44 $)
+AC_REVISION($Revision: 1.46 $)
 AC_CONFIG_SRCDIR([spamass-milter.cpp])
 
 # Initialize automake now
@@ -18,12 +18,12 @@ CXXFLAGS="$CXXFLAGS $VL_WARN_CFLAGS"
 AC_LANG(C++)
 
 # Enable useable exception handler if it exists.
-AC_CXX_VERBOSE_TERMINATE_HANDLER
+# AC_CXX_VERBOSE_TERMINATE_HANDLER
 
 # Try and disable all inlining; gdb shows the inlined function in a
 # stack trace and you lose the caller's frame.  Bad for debugging.
-AC_PIKE_COMPILER_FLAG(-fno-default-inline,fno_default_inline,CXXFLAGS)
-AC_PIKE_COMPILER_FLAG(-fno-inline,fno_inline,CXXFLAGS)
+# AC_PIKE_COMPILER_FLAG(-fno-default-inline,fno_default_inline,CXXFLAGS)
+# AC_PIKE_COMPILER_FLAG(-fno-inline,fno_inline,CXXFLAGS)
 
 #PIKE_INCLUDE_PATHS
 #PIKE_LIBRARY_PATHS
