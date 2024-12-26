@@ -14,11 +14,17 @@
    */
 #undef HAVE_DECL_STRSEP
 
+/* Define to 1 if you have the <dmalloc.h> header file. */
+#undef HAVE_DMALLOC_H
+
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
+
+/* Define to 1 if you have the `dmallocthcxx' library (-ldmallocthcxx). */
+#undef HAVE_LIBDMALLOCTHCXX
 
 /* Define to 1 if you have the `milter' library (-lmilter). */
 #undef HAVE_LIBMILTER
@@ -28,6 +34,9 @@
 
 /* Define to 1 if you have the <poll.h> header file. */
 #undef HAVE_POLL_H
+
+/* Define if you have POSIX threads libraries and header files. */
+#undef HAVE_PTHREAD
 
 /* Define to 1 if you have the `snprintf' function. */
 #undef HAVE_SNPRINTF
@@ -101,6 +110,10 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
+/* Define to the necessary symbol if this constant uses a non-standard name on
+   your system. */
+#undef PTHREAD_CREATE_JOINABLE
+
 /* Path to sendmail */
 #undef SENDMAIL
 
@@ -114,6 +127,9 @@
 
 /* Version number of package */
 #undef VERSION
+
+/* Define if using the dmalloc debugging malloc package */
+#undef WITH_DMALLOC
 
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const

@@ -653,6 +653,18 @@ LTLIBOBJS
 LIBOBJS
 EGREP
 GREP
+PTHREAD_CFLAGS
+PTHREAD_LIBS
+PTHREAD_CC
+acx_pthread_config
+host_os
+host_vendor
+host_cpu
+host
+build_os
+build_vendor
+build_cpu
+build
 HAVE_MDOC_FALSE
 HAVE_MDOC_TRUE
 NROFF
@@ -756,6 +768,7 @@ enable_option_checking
 enable_silent_rules
 enable_dependency_tracking
 enable_emulate_poll
+with_dmalloc
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1380,6 +1393,10 @@ Program names:
   --program-prefix=PREFIX            prepend PREFIX to installed program names
   --program-suffix=SUFFIX            append SUFFIX to installed program names
   --program-transform-name=PROGRAM   run sed PROGRAM on installed program names
+
+System types:
+  --build=BUILD     configure for building on BUILD [guessed]
+  --host=HOST       cross-compile to build programs to run on HOST [BUILD]
 _ACEOF
 fi
 
@@ -1400,6 +1417,11 @@ Optional Features:
   --disable-dependency-tracking
                           speeds up one-time build
   --enable-emulate-poll   use a select wrapper instead of poll (autodetected)
+
+Optional Packages:
+  --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
+  --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-dmalloc          use dmalloc ( http://www.dmalloc.com )
 
 Some influential environment variables:
   CXX         C++ compiler command
@@ -1572,6 +1594,53 @@ fi
   as_fn_set_status $ac_retval
 
 } # ac_fn_c_try_compile
+
+# ac_fn_c_try_link LINENO
+# -----------------------
+# Try to link conftest.$ac_ext, and return whether this succeeded.
+ac_fn_c_try_link ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  rm -f conftest.$ac_objext conftest.beam conftest$ac_exeext
+  if { { ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:${as_lineno-$LINENO}: $ac_try_echo\""
+printf "%s\n" "$ac_try_echo"; } >&5
+  (eval "$ac_link") 2>conftest.err
+  ac_status=$?
+  if test -s conftest.err; then
+    grep -v '^ *+' conftest.err >conftest.er1
+    cat conftest.er1 >&5
+    mv -f conftest.er1 conftest.err
+  fi
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+	 test "$cross_compiling" = yes ||
+	 test -x conftest$ac_exeext
+       }
+then :
+  ac_retval=0
+else $as_nop
+  printf "%s\n" "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_retval=1
+fi
+  # Delete the IPA/IPO (Inter Procedural Analysis/Optimization) information
+  # created by the PGI compiler (conftest_ipa8_conftest.oo), as it would
+  # interfere with the next link command; also delete a directory that is
+  # left behind by Apple's compiler.  We do this before executing the actions.
+  rm -rf conftest.dSYM conftest_ipa8_conftest.oo
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+  as_fn_set_status $ac_retval
+
+} # ac_fn_c_try_link
 
 # ac_fn_cxx_check_header_compile LINENO HEADER VAR INCLUDES
 # ---------------------------------------------------------
@@ -1771,53 +1840,6 @@ printf "%s\n" "$ac_res" >&6; }
   eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
 
 } # ac_fn_cxx_check_func
-
-# ac_fn_c_try_link LINENO
-# -----------------------
-# Try to link conftest.$ac_ext, and return whether this succeeded.
-ac_fn_c_try_link ()
-{
-  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
-  rm -f conftest.$ac_objext conftest.beam conftest$ac_exeext
-  if { { ac_try="$ac_link"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval ac_try_echo="\"\$as_me:${as_lineno-$LINENO}: $ac_try_echo\""
-printf "%s\n" "$ac_try_echo"; } >&5
-  (eval "$ac_link") 2>conftest.err
-  ac_status=$?
-  if test -s conftest.err; then
-    grep -v '^ *+' conftest.err >conftest.er1
-    cat conftest.er1 >&5
-    mv -f conftest.er1 conftest.err
-  fi
-  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; } && {
-	 test -z "$ac_c_werror_flag" ||
-	 test ! -s conftest.err
-       } && test -s conftest$ac_exeext && {
-	 test "$cross_compiling" = yes ||
-	 test -x conftest$ac_exeext
-       }
-then :
-  ac_retval=0
-else $as_nop
-  printf "%s\n" "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-	ac_retval=1
-fi
-  # Delete the IPA/IPO (Inter Procedural Analysis/Optimization) information
-  # created by the PGI compiler (conftest_ipa8_conftest.oo), as it would
-  # interfere with the next link command; also delete a directory that is
-  # left behind by Apple's compiler.  We do this before executing the actions.
-  rm -rf conftest.dSYM conftest_ipa8_conftest.oo
-  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
-  as_fn_set_status $ac_retval
-
-} # ac_fn_c_try_link
 
 # ac_fn_c_check_func LINENO FUNC VAR
 # ----------------------------------
@@ -2762,7 +2784,7 @@ as_fn_append ac_header_cxx_list " sys/types.h sys_types_h HAVE_SYS_TYPES_H"
 as_fn_append ac_header_cxx_list " unistd.h unistd_h HAVE_UNISTD_H"
 
 # Auxiliary files required by this configure script.
-ac_aux_files="compile missing install-sh"
+ac_aux_files="config.guess config.sub compile missing install-sh"
 
 # Locations in which to look for auxiliary files.
 ac_aux_dir_candidates="${srcdir}${PATH_SEPARATOR}${srcdir}/..${PATH_SEPARATOR}${srcdir}/../.."
@@ -5307,7 +5329,118 @@ else
 fi
 
 
-VL_PROG_CC_WARNINGS
+
+  ansi=
+  if test -z "$ansi"; then
+    msg="for C compiler warning flags"
+  else
+    msg="for C compiler warning and ANSI conformance flags"
+  fi
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $msg" >&5
+printf %s "checking $msg... " >&6; }
+if test ${vl_cv_prog_cc_warnings+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+
+    if test -n "$CC"; then
+      cat > conftest.c <<EOF
+int main(int argc, char **argv) { return 0; }
+EOF
+
+            if test "$GCC" = "yes"; then
+        if test -z "$ansi"; then
+          vl_cv_prog_cc_warnings="-Wall"
+        else
+          vl_cv_prog_cc_warnings="-Wall -ansi -pedantic"
+        fi
+
+
+            elif $CC -V 2>&1 | grep -i "WorkShop" > /dev/null 2>&1 &&
+           $CC -c -v -Xc conftest.c > /dev/null 2>&1 &&
+           test -f conftest.o; then
+        if test -z "$ansi"; then
+          vl_cv_prog_cc_warnings="-v"
+        else
+          vl_cv_prog_cc_warnings="-v -Xc"
+        fi
+
+            elif $CC -V 2>&1 | grep -i "Digital UNIX Compiler" > /dev/null 2>&1 &&
+           $CC -c -verbose -w0 -warnprotos -std1 conftest.c > /dev/null 2>&1 &&
+           test -f conftest.o; then
+        if test -z "$ansi"; then
+          vl_cv_prog_cc_warnings="-verbose -w0 -warnprotos"
+        else
+          vl_cv_prog_cc_warnings="-verbose -w0 -warnprotos -std1"
+        fi
+
+            elif $CC 2>&1 | grep -i "C for AIX Compiler" > /dev/null 2>&1 &&
+           $CC -c -qlanglvl=ansi -qinfo=all conftest.c > /dev/null 2>&1 &&
+           test -f conftest.o; then
+        if test -z "$ansi"; then
+          vl_cv_prog_cc_warnings="-qsrcmsg -qinfo=all:noppt:noppc:noobs:nocnd"
+        else
+          vl_cv_prog_cc_warnings="-qsrcmsg -qinfo=all:noppt:noppc:noobs:nocnd -qlanglvl=ansi"
+        fi
+
+            elif $CC -version 2>&1 | grep -i "MIPSpro Compilers" > /dev/null 2>&1 &&
+           $CC -c -fullwarn -ansi -ansiE conftest.c > /dev/null 2>&1 &&
+           test -f conftest.o; then
+        if test -z "$ansi"; then
+          vl_cv_prog_cc_warnings="-fullwarn"
+        else
+          vl_cv_prog_cc_warnings="-fullwarn -ansi -ansiE"
+        fi
+
+            elif what $CC 2>&1 | grep -i "HP C Compiler" > /dev/null 2>&1 &&
+           $CC -c -Aa +w1 conftest.c > /dev/null 2>&1 &&
+           test -f conftest.o; then
+        if test -z "$ansi"; then
+          vl_cv_prog_cc_warnings="+w1"
+        else
+          vl_cv_prog_cc_warnings="+w1 -Aa"
+        fi
+
+            elif $CC -V 2>&1 | grep "/SX" > /dev/null 2>&1 &&
+           $CC -c -pvctl,fullmsg -Xc conftest.c > /dev/null 2>&1 &&
+           test -f conftest.o; then
+        if test -z "$ansi"; then
+          vl_cv_prog_cc_warnings="-pvctl,fullmsg"
+        else
+          vl_cv_prog_cc_warnings="-pvctl,fullmsg -Xc"
+        fi
+
+            elif $CC -V 2>&1 | grep -i "Cray" > /dev/null 2>&1 &&
+           $CC -c -h msglevel 2 conftest.c > /dev/null 2>&1 &&
+           test -f conftest.o; then
+        if test -z "$ansi"; then
+          vl_cv_prog_cc_warnings="-h msglevel 2"
+        else
+          vl_cv_prog_cc_warnings="-h msglevel 2 -h conform"
+        fi
+
+            elif $CC -V 2>&1 | grep -i "Intel(R) C++ Compiler" > /dev/null 2>&1 &&
+           $CC -c -Wall -wd981,1418,193 conftest.c > /dev/null 2>&1 &&
+           test -f conftest.o; then
+        if test -z "$ansi"; then
+          vl_cv_prog_cc_warnings="-Wall -wd981,1418,193"
+        else
+          vl_cv_prog_cc_warnings="-Wall -wd981,1418,193 -Xc"
+        fi
+
+      fi
+      rm -f conftest.*
+    fi
+    if test -n "$vl_cv_prog_cc_warnings"; then
+      VL_WARN_CFLAGS="$vl_cv_prog_cc_warnings"
+    else
+      vl_cv_prog_cc_warnings="unknown"
+    fi
+
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $vl_cv_prog_cc_warnings" >&5
+printf "%s\n" "$vl_cv_prog_cc_warnings" >&6; }
+
 CFLAGS="$CFLAGS $VL_WARN_CFLAGS"
 CXXFLAGS="$CXXFLAGS $VL_WARN_CFLAGS"
 ac_ext=cpp
@@ -5520,12 +5653,458 @@ fi
 
 # Search for pthreads, and make them the default (have to do it here else
 # the -lmilter check will fail to link)
-ACX_PTHREAD(,as_fn_error $? "Cannot determine how to use pthreads" "$LINENO" 5)
+
+
+  # Make sure we can run config.sub.
+$SHELL "${ac_aux_dir}config.sub" sun4 >/dev/null 2>&1 ||
+  as_fn_error $? "cannot run $SHELL ${ac_aux_dir}config.sub" "$LINENO" 5
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking build system type" >&5
+printf %s "checking build system type... " >&6; }
+if test ${ac_cv_build+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  ac_build_alias=$build_alias
+test "x$ac_build_alias" = x &&
+  ac_build_alias=`$SHELL "${ac_aux_dir}config.guess"`
+test "x$ac_build_alias" = x &&
+  as_fn_error $? "cannot guess build type; you must specify one" "$LINENO" 5
+ac_cv_build=`$SHELL "${ac_aux_dir}config.sub" $ac_build_alias` ||
+  as_fn_error $? "$SHELL ${ac_aux_dir}config.sub $ac_build_alias failed" "$LINENO" 5
+
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_build" >&5
+printf "%s\n" "$ac_cv_build" >&6; }
+case $ac_cv_build in
+*-*-*) ;;
+*) as_fn_error $? "invalid value of canonical build" "$LINENO" 5;;
+esac
+build=$ac_cv_build
+ac_save_IFS=$IFS; IFS='-'
+set x $ac_cv_build
+shift
+build_cpu=$1
+build_vendor=$2
+shift; shift
+# Remember, the first character of IFS is used to create $*,
+# except with old shells:
+build_os=$*
+IFS=$ac_save_IFS
+case $build_os in *\ *) build_os=`echo "$build_os" | sed 's/ /-/g'`;; esac
+
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking host system type" >&5
+printf %s "checking host system type... " >&6; }
+if test ${ac_cv_host+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test "x$host_alias" = x; then
+  ac_cv_host=$ac_cv_build
+else
+  ac_cv_host=`$SHELL "${ac_aux_dir}config.sub" $host_alias` ||
+    as_fn_error $? "$SHELL ${ac_aux_dir}config.sub $host_alias failed" "$LINENO" 5
+fi
+
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_host" >&5
+printf "%s\n" "$ac_cv_host" >&6; }
+case $ac_cv_host in
+*-*-*) ;;
+*) as_fn_error $? "invalid value of canonical host" "$LINENO" 5;;
+esac
+host=$ac_cv_host
+ac_save_IFS=$IFS; IFS='-'
+set x $ac_cv_host
+shift
+host_cpu=$1
+host_vendor=$2
+shift; shift
+# Remember, the first character of IFS is used to create $*,
+# except with old shells:
+host_os=$*
+IFS=$ac_save_IFS
+case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
+
+
+
+
+
+
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+acx_pthread_ok=no
+
+# We used to check for pthread.h first, but this fails if pthread.h
+# requires special compiler flags (e.g. on True64 or Sequent).
+# It gets checked for in the link test anyway.
+
+# First of all, check if the user has set any of the PTHREAD_LIBS,
+# etcetera environment variables, and if threads linking works using
+# them:
+if test x"$PTHREAD_LIBS$PTHREAD_CFLAGS" != x; then
+        save_CFLAGS="$CFLAGS"
+        CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+        save_LIBS="$LIBS"
+        LIBS="$PTHREAD_LIBS $LIBS"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for pthread_join in LIBS=$PTHREAD_LIBS with CFLAGS=$PTHREAD_CFLAGS" >&5
+printf %s "checking for pthread_join in LIBS=$PTHREAD_LIBS with CFLAGS=$PTHREAD_CFLAGS... " >&6; }
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+char pthread_join ();
+int
+main (void)
+{
+return pthread_join ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  acx_pthread_ok=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $acx_pthread_ok" >&5
+printf "%s\n" "$acx_pthread_ok" >&6; }
+        if test x"$acx_pthread_ok" = xno; then
+                PTHREAD_LIBS=""
+                PTHREAD_CFLAGS=""
+        fi
+        LIBS="$save_LIBS"
+        CFLAGS="$save_CFLAGS"
+fi
+
+# We must check for the threads library under a number of different
+# names; the ordering is very important because some systems
+# (e.g. DEC) have both -lpthread and -lpthreads, where one of the
+# libraries is broken (non-POSIX).
+
+# Create a list of thread flags to try.  Items starting with a "-" are
+# C compiler flags, and other items are library names, except for "none"
+# which indicates that we try without any flags at all, and "pthread-config"
+# which is a program returning the flags for the Pth emulation library.
+
+acx_pthread_flags="pthreads none -Kthread -kthread lthread -pthread -pthreads -mthreads pthread --thread-safe -mt pthread-config"
+
+# The ordering *is* (sometimes) important.  Some notes on the
+# individual items follow:
+
+# pthreads: AIX (must check this before -lpthread)
+# none: in case threads are in libc; should be tried before -Kthread and
+#       other compiler flags to prevent continual compiler warnings
+# -Kthread: Sequent (threads in libc, but -Kthread needed for pthread.h)
+# -kthread: FreeBSD kernel threads (preferred to -pthread since SMP-able)
+# lthread: LinuxThreads port on FreeBSD (also preferred to -pthread)
+# -pthread: Linux/gcc (kernel threads), BSD/gcc (userland threads)
+# -pthreads: Solaris/gcc
+# -mthreads: Mingw32/gcc, Lynx/gcc
+# -mt: Sun Workshop C (may only link SunOS threads [-lthread], but it
+#      doesn't hurt to check since this sometimes defines pthreads too;
+#      also defines -D_REENTRANT)
+# pthread: Linux, etcetera
+# --thread-safe: KAI C++
+# pthread-config: use pthread-config program (for GNU Pth library)
+
+case "${host_cpu}-${host_os}" in
+        *solaris*)
+
+        # On Solaris (at least, for some versions), libc contains stubbed
+        # (non-functional) versions of the pthreads routines, so link-based
+        # tests will erroneously succeed.  (We need to link with -pthread or
+        # -lpthread.)  (The stubs are missing pthread_cleanup_push, or rather
+        # a function called by this macro, so we could check for that, but
+        # who knows whether they'll stub that too in a future libc.)  So,
+        # we'll just look for -pthreads and -lpthread first:
+
+        acx_pthread_flags="-pthread -pthreads pthread -mt $acx_pthread_flags"
+        ;;
+esac
+
+if test x"$acx_pthread_ok" = xno; then
+for flag in $acx_pthread_flags; do
+
+        case $flag in
+                none)
+                { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether pthreads work without any flags" >&5
+printf %s "checking whether pthreads work without any flags... " >&6; }
+                ;;
+
+                -*)
+                { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether pthreads work with $flag" >&5
+printf %s "checking whether pthreads work with $flag... " >&6; }
+                PTHREAD_CFLAGS="$flag"
+                ;;
+
+		pthread-config)
+		# Extract the first word of "pthread-config", so it can be a program name with args.
+set dummy pthread-config; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_acx_pthread_config+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$acx_pthread_config"; then
+  ac_cv_prog_acx_pthread_config="$acx_pthread_config" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_acx_pthread_config="yes"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_prog_acx_pthread_config" && ac_cv_prog_acx_pthread_config="no"
+fi
+fi
+acx_pthread_config=$ac_cv_prog_acx_pthread_config
+if test -n "$acx_pthread_config"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $acx_pthread_config" >&5
+printf "%s\n" "$acx_pthread_config" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+		if test x"$acx_pthread_config" = xno; then continue; fi
+		PTHREAD_CFLAGS="`pthread-config --cflags`"
+		PTHREAD_LIBS="`pthread-config --ldflags` `pthread-config --libs`"
+		;;
+
+                *)
+                { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for the pthreads library -l$flag" >&5
+printf %s "checking for the pthreads library -l$flag... " >&6; }
+                PTHREAD_LIBS="-l$flag"
+                ;;
+        esac
+
+        save_LIBS="$LIBS"
+        save_CFLAGS="$CFLAGS"
+        LIBS="$PTHREAD_LIBS $LIBS"
+        CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+
+        # Check for various functions.  We must include pthread.h,
+        # since some functions may be macros.  (On the Sequent, we
+        # need a special flag -Kthread to make this header compile.)
+        # We check for pthread_join because it is in -lpthread on IRIX
+        # while pthread_create is in libc.  We check for pthread_attr_init
+        # due to DEC craziness with -lpthreads.  We check for
+        # pthread_cleanup_push because it is one of the few pthread
+        # functions on Solaris that doesn't have a non-functional libc stub.
+        # We try pthread_create on general principles.
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <pthread.h>
+int
+main (void)
+{
+pthread_t th; pthread_join(th, 0);
+                     pthread_attr_init(0); pthread_cleanup_push(0, 0);
+                     pthread_create(0,0,0,0); pthread_cleanup_pop(0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  acx_pthread_ok=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+        LIBS="$save_LIBS"
+        CFLAGS="$save_CFLAGS"
+
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $acx_pthread_ok" >&5
+printf "%s\n" "$acx_pthread_ok" >&6; }
+        if test "x$acx_pthread_ok" = xyes; then
+                break;
+        fi
+
+        PTHREAD_LIBS=""
+        PTHREAD_CFLAGS=""
+done
+fi
+
+# Various other checks:
+if test "x$acx_pthread_ok" = xyes; then
+        save_LIBS="$LIBS"
+        LIBS="$PTHREAD_LIBS $LIBS"
+        save_CFLAGS="$CFLAGS"
+        CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+
+        # Detect AIX lossage: threads are created detached by default
+        # and the JOINABLE attribute has a nonstandard name (UNDETACHED).
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for joinable pthread attribute" >&5
+printf %s "checking for joinable pthread attribute... " >&6; }
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <pthread.h>
+int
+main (void)
+{
+int attr=PTHREAD_CREATE_JOINABLE;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ok=PTHREAD_CREATE_JOINABLE
+else $as_nop
+  ok=unknown
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+        if test x"$ok" = xunknown; then
+                cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <pthread.h>
+int
+main (void)
+{
+int attr=PTHREAD_CREATE_UNDETACHED;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ok=PTHREAD_CREATE_UNDETACHED
+else $as_nop
+  ok=unknown
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+        fi
+        if test x"$ok" != xPTHREAD_CREATE_JOINABLE; then
+
+printf "%s\n" "#define PTHREAD_CREATE_JOINABLE \$ok" >>confdefs.h
+
+        fi
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: ${ok}" >&5
+printf "%s\n" "${ok}" >&6; }
+        if test x"$ok" = xunknown; then
+                { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: we do not know how to create joinable pthreads" >&5
+printf "%s\n" "$as_me: WARNING: we do not know how to create joinable pthreads" >&2;}
+        fi
+
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if more special flags are required for pthreads" >&5
+printf %s "checking if more special flags are required for pthreads... " >&6; }
+        flag=no
+        case "${host_cpu}-${host_os}" in
+                *-aix* | *-freebsd* | *-darwin*) flag="-D_THREAD_SAFE";;
+                *solaris* | *-osf* | *-hpux*) flag="-D_REENTRANT";;
+        esac
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: ${flag}" >&5
+printf "%s\n" "${flag}" >&6; }
+        if test "x$flag" != xno; then
+                PTHREAD_CFLAGS="$flag $PTHREAD_CFLAGS"
+        fi
+
+        LIBS="$save_LIBS"
+        CFLAGS="$save_CFLAGS"
+
+        # More AIX lossage: must compile with cc_r
+        # Extract the first word of "cc_r", so it can be a program name with args.
+set dummy cc_r; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_PTHREAD_CC+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$PTHREAD_CC"; then
+  ac_cv_prog_PTHREAD_CC="$PTHREAD_CC" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_PTHREAD_CC="cc_r"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_prog_PTHREAD_CC" && ac_cv_prog_PTHREAD_CC="${CC}"
+fi
+fi
+PTHREAD_CC=$ac_cv_prog_PTHREAD_CC
+if test -n "$PTHREAD_CC"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PTHREAD_CC" >&5
+printf "%s\n" "$PTHREAD_CC" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+else
+        PTHREAD_CC="$CC"
+fi
+
+
+
+
+
+# Finally, execute ACTION-IF-FOUND/ACTION-IF-NOT-FOUND:
+if test x"$acx_pthread_ok" = xyes; then
+
+printf "%s\n" "#define HAVE_PTHREAD 1" >>confdefs.h
+
+        :
+else
+        acx_pthread_ok=no
+        as_fn_error $? "Cannot determine how to use pthreads" "$LINENO" 5
+fi
+ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+
 CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
 CXXFLAGS="$CXXFLAGS $PTHREAD_CFLAGS"
 LIBS="$LIBS $PTHREAD_LIBS"
 
 # Checks for header files.
+# Autoupdate added the next two lines to ensure that your configure
+# script's behavior did not change.  They are probably safe to remove.
 
 ac_header= ac_cache=
 for ac_item in $ac_header_cxx_list
@@ -5624,9 +6203,6 @@ fi
 printf "%s\n" "$ac_cv_path_GREP" >&6; }
  GREP="$ac_cv_path_GREP"
 
-
-# Autoupdate added the next two lines to ensure that your configure
-# script's behavior did not change.  They are probably safe to remove.
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for egrep" >&5
 printf %s "checking for egrep... " >&6; }
@@ -5903,7 +6479,65 @@ printf "%s\n" "#define size_t unsigned int" >>confdefs.h
 fi
 
 
-CF_GNU_SOURCE
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if we must define _GNU_SOURCE" >&5
+printf %s "checking if we must define _GNU_SOURCE... " >&6; }
+if test ${cf_cv_gnu_source+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/types.h>
+int
+main (void)
+{
+
+#ifndef _XOPEN_SOURCE
+make an error
+#endif
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"
+then :
+  cf_cv_gnu_source=no
+else $as_nop
+  cf_save="$CPPFLAGS"
+	 CPPFLAGS="$CPPFLAGS -D_GNU_SOURCE"
+	 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/types.h>
+int
+main (void)
+{
+
+#ifdef _XOPEN_SOURCE
+make an error
+#endif
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"
+then :
+  cf_cv_gnu_source=no
+else $as_nop
+  cf_cv_gnu_source=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+	CPPFLAGS="$cf_save"
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $cf_cv_gnu_source" >&5
+printf "%s\n" "$cf_cv_gnu_source" >&6; }
+test "$cf_cv_gnu_source" = yes && CPPFLAGS="$CPPFLAGS -D_GNU_SOURCE"
+
 
 # Check whether --enable-emulate-poll was given.
 if test ${enable_emulate_poll+y}
@@ -5935,7 +6569,79 @@ esac
 
 fi
 
-DN_WITH_DMALLOC
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if malloc debugging is wanted" >&5
+printf %s "checking if malloc debugging is wanted... " >&6; }
+
+# Check whether --with-dmalloc was given.
+if test ${with_dmalloc+y}
+then :
+  withval=$with_dmalloc; if test "$withval" = yes; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+printf "%s\n" "#define WITH_DMALLOC 1" >>confdefs.h
+
+  ac_fn_cxx_check_header_compile "$LINENO" "dmalloc.h" "ac_cv_header_dmalloc_h" "$ac_includes_default"
+if test "x$ac_cv_header_dmalloc_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_DMALLOC_H 1" >>confdefs.h
+
+fi
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for dmalloc_malloc in -ldmallocthcxx" >&5
+printf %s "checking for dmalloc_malloc in -ldmallocthcxx... " >&6; }
+if test ${ac_cv_lib_dmallocthcxx_dmalloc_malloc+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-ldmallocthcxx  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+namespace conftest {
+  extern "C" int dmalloc_malloc ();
+}
+int
+main (void)
+{
+return conftest::dmalloc_malloc ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"
+then :
+  ac_cv_lib_dmallocthcxx_dmalloc_malloc=yes
+else $as_nop
+  ac_cv_lib_dmallocthcxx_dmalloc_malloc=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_dmallocthcxx_dmalloc_malloc" >&5
+printf "%s\n" "$ac_cv_lib_dmallocthcxx_dmalloc_malloc" >&6; }
+if test "x$ac_cv_lib_dmallocthcxx_dmalloc_malloc" = xyes
+then :
+  printf "%s\n" "#define HAVE_LIBDMALLOCTHCXX 1" >>confdefs.h
+
+  LIBS="-ldmallocthcxx $LIBS"
+
+else $as_nop
+  as_fn_error $? "Threaded C++ dmalloc library not found" "$LINENO" 5
+fi
+
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+else $as_nop
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
 
 # Checks for library functions.
 ac_fn_cxx_check_func "$LINENO" "vsyslog" "ac_cv_func_vsyslog"
@@ -6153,7 +6859,6 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
 
 ac_fn_c_check_func "$LINENO" "strsep" "ac_cv_func_strsep"
 if test "x$ac_cv_func_strsep" = xyes

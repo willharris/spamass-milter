@@ -1177,3 +1177,7 @@ AC_SUBST([am__tar])
 AC_SUBST([am__untar])
 ]) # _AM_PROG_TAR
 
+m4_include([ac_acx_pthread.m4])
+m4_include([ac_cf_gnu_source.m4])
+m4_include([ac_dmalloc.m4])
+m4_include([ac_vl_prog_cc_warnings.m4])
