@@ -804,9 +804,10 @@ mlfi_envfrom(SMFICTX* ctx, char** envfrom)
 
   if (ignore_authenticated_senders)
   {
-    char *auth_authen;
+    const char *auth_authen;
 
-    auth_authen = smfi_getsymval(ctx, "{auth_authen}");
+    auth_authen = smfi_getsymval(ctx, 
+        const_cast<char *>("{auth_authen}"));
     debug(D_MISC, "auth_authen=%s", auth_authen ?: "<unauthenticated>");
 
     if (auth_authen)
@@ -969,14 +970,14 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 		}
 
 		/* Authenticated bits Information */
-		macro_auth_type = smfi_getsymval(ctx, "{auth_type}");
+		macro_auth_type = smfi_getsymval(ctx, const_cast<char *>("{auth_type}"));
 		if (!macro_auth_type)
 		{
 			macro_auth_type = "";
 			warnmacro("auth_type", "ENVRCPT");
 		}
 
-		macro_auth_ssf = smfi_getsymval(ctx, "{auth_ssf}");
+		macro_auth_ssf = smfi_getsymval(ctx, const_cast<char *>("{auth_ssf}"));
 		if (!macro_auth_ssf)
 		{
 			macro_auth_ssf = "";
